@@ -7,43 +7,36 @@ import {
   sub,
   add,
   moments,
-  concat,
-  cast,
   mean,
   Rank,
   Tensor,
-  Tensor3D
+  Tensor3D,
+  concat,
+  cast
 } from '@tensorflow/tfjs';
 import { BATCHSIZE } from '../constant';
 import { PosprocessorInteface } from './posprocessor';
 import { TensorStoreInterface } from './tensorStore';
+import FacialProcessor from './facialProcessor';
 
 export interface PreprocessorInteface {
   startProcess(): void;
   stopProcess(): void;
 }
+
 class Preprocessor implements PreprocessorInteface {
-  tensorStore: TensorStoreInterface;
+  private tensorStore: TensorStoreInterface;
+  private posprocessor: PosprocessorInteface;
+  private facialProcessor: FacialProcessor;
+  private isProcessing: boolean = false;
+  private rawBatch: Tensor<Rank>;
+  private normalizedBatch: Tensor<Rank>;
+  private previousFrame: Tensor<Rank> | null = null;
 
-  posprocessor: PosprocessorInteface;
-
-  previousFrame: Tensor<Rank> | null;
-
-  isProcessing: boolean;
-
-  rawBatch: Tensor<Rank>;
-
-  normalizedBatch: Tensor<Rank>;
-
-  constructor(
-    tensorStore: TensorStoreInterface,
-    posprocessor: PosprocessorInteface
-  ) {
+  constructor(tensorStore: TensorStoreInterface, posprocessor: PosprocessorInteface) {
     this.tensorStore = tensorStore;
     this.posprocessor = posprocessor;
-    this.previousFrame = null;
-    this.isProcessing = false;
-
+    this.facialProcessor = new FacialProcessor(tensorStore);
     this.rawBatch = tensor([]);
     this.normalizedBatch = tensor([]);
   }
@@ -58,15 +51,18 @@ class Preprocessor implements PreprocessorInteface {
     this.isProcessing = false;
     this.rawBatch = tensor([]);
     this.normalizedBatch = tensor([]);
+    this.facialProcessor.reset();
   };
 
   startProcess = () => {
     this.isProcessing = true;
     this.process();
+    this.facialProcessor.startProcess();
   };
 
   stopProcess = () => {
     this.isProcessing = false;
+    this.facialProcessor.stopProcess();
     this.reset();
   };
 
@@ -144,7 +140,7 @@ class Preprocessor implements PreprocessorInteface {
     dispose(nNormalize);
     dispose(mNoramlize);
     this.previousFrame = frame;
-  };
+  }
 }
 
 export default Preprocessor;
