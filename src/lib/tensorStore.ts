@@ -5,6 +5,11 @@ export interface TensorStoreInterface {
   getRawTensor(): Tensor3D | null;
   addRppgPltData(data: TypedArray): void;
   addRawTensor(data: Tensor3D): void;
+  addRRInterval(interval: number): void;
+  addHeartRate(rate: number): void;
+  getRRIntervals(): number[];
+  getHeartRates(): number[];
+  getCurrentHeartRate(): number | null;
 }
 
 class TensorStore implements TensorStoreInterface {
@@ -12,11 +17,17 @@ class TensorStore implements TensorStoreInterface {
 
   rppgPltData: number[];
 
+  rrIntervals: number[];
+
+  heartRates: number[];
+
   initialWait: boolean;
 
   constructor() {
     this.rawFrames = [];
     this.rppgPltData = [];
+    this.rrIntervals = [];
+    this.heartRates = [];
     this.initialWait = true;
   }
 
@@ -26,6 +37,8 @@ class TensorStore implements TensorStoreInterface {
     });
     this.rawFrames = [];
     this.rppgPltData = [];
+    this.rrIntervals = [];
+    this.heartRates = [];
     this.initialWait = true;
   };
 
@@ -43,6 +56,26 @@ class TensorStore implements TensorStoreInterface {
 
   addRawTensor = (tensor: Tensor3D) => {
     this.rawFrames.push(tensor);
+  };
+
+  addRRInterval = (interval: number) => {
+    this.rrIntervals.push(interval);
+  };
+
+  addHeartRate = (rate: number) => {
+    this.heartRates.push(rate);
+  };
+
+  getRRIntervals = () => {
+    return [...this.rrIntervals];
+  };
+
+  getHeartRates = () => {
+    return [...this.heartRates];
+  };
+
+  getCurrentHeartRate = () => {
+    return this.heartRates.length > 0 ? this.heartRates[this.heartRates.length - 1] : null;
   };
 }
 
