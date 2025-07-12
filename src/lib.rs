@@ -5,6 +5,54 @@ use js_sys::Array;
 pub struct BiofeedbackProcessor {
     rr_intervals: Vec<f64>,
     sampling_rate: f64,
+    facial_metrics: FacialMetrics,
+}
+
+#[derive(Clone)]
+struct FacialMetrics {
+    muscle_tension: Vec<f64>,
+    eye_movement: Vec<f64>,
+    blink_rate: Vec<f64>,
+    facial_symmetry: Vec<f64>,
+}
+
+impl FacialMetrics {
+    fn new() -> Self {
+        Self {
+            muscle_tension: Vec::new(),
+            eye_movement: Vec::new(),
+            blink_rate: Vec::new(),
+            facial_symmetry: Vec::new(),
+        }
+    }
+
+    fn add_muscle_tension(&mut self, tension: f64) {
+        self.muscle_tension.push(tension);
+        if self.muscle_tension.len() > 100 {
+            self.muscle_tension.remove(0);
+        }
+    }
+
+    fn add_eye_movement(&mut self, movement: f64) {
+        self.eye_movement.push(movement);
+        if self.eye_movement.len() > 100 {
+            self.eye_movement.remove(0);
+        }
+    }
+
+    fn add_blink_rate(&mut self, rate: f64) {
+        self.blink_rate.push(rate);
+        if self.blink_rate.len() > 100 {
+            self.blink_rate.remove(0);
+        }
+    }
+
+    fn add_facial_symmetry(&mut self, symmetry: f64) {
+        self.facial_symmetry.push(symmetry);
+        if self.facial_symmetry.len() > 100 {
+            self.facial_symmetry.remove(0);
+        }
+    }
 }
 
 #[wasm_bindgen]
@@ -14,6 +62,7 @@ impl BiofeedbackProcessor {
         BiofeedbackProcessor {
             rr_intervals: Vec::new(),
             sampling_rate,
+            facial_metrics: FacialMetrics::new(),
         }
     }
 
@@ -25,6 +74,14 @@ impl BiofeedbackProcessor {
     /// Clear stored RR intervals
     pub fn clear_rr_intervals(&mut self) {
         self.rr_intervals.clear();
+    }
+
+    /// Add facial muscle tension data
+    pub fn add_facial_data(&mut self, muscle_tension: f64, eye_movement: f64, blink_rate: f64, facial_symmetry: f64) {
+        self.facial_metrics.add_muscle_tension(muscle_tension);
+        self.facial_metrics.add_eye_movement(eye_movement);
+        self.facial_metrics.add_blink_rate(blink_rate);
+        self.facial_metrics.add_facial_symmetry(facial_symmetry);
     }
 
     /// Compute time-domain HRV metrics (RMSSD and SDNN)
@@ -41,6 +98,32 @@ impl BiofeedbackProcessor {
         result.push(&JsValue::from_f64(rmssd));
         result.push(&JsValue::from_f64(sdnn));
         result.push(&JsValue::from_f64(pnn50));
+
+        Ok(result)
+    }
+
+    /// Compute facial muscle tension metrics
+    pub fn compute_facial_metrics(&self) -> Result<Array, JsValue> {
+        if self.facial_metrics.muscle_tension.is_empty() {
+            return Err("No facial data available".into());
+        }
+
+        let avg_tension = self.facial_metrics.muscle_tension.iter().sum::<f64>() / self.facial_metrics.muscle_tension.len() as f64;
+        let tension_variability = self.compute_variability(&self.facial_metrics.muscle_tension);
+        
+        let avg_eye_movement = self.facial_metrics.eye_movement.iter().sum::<f64>() / self.facial_metrics.eye_movement.len() as f64;
+        let eye_movement_frequency = self.compute_eye_movement_frequency();
+        
+        let avg_blink_rate = self.facial_metrics.blink_rate.iter().sum::<f64>() / self.facial_metrics.blink_rate.len() as f64;
+        let avg_symmetry = self.facial_metrics.facial_symmetry.iter().sum::<f64>() / self.facial_metrics.facial_symmetry.len() as f64;
+
+        let result = Array::new();
+        result.push(&JsValue::from_f64(avg_tension));
+        result.push(&JsValue::from_f64(tension_variability));
+        result.push(&JsValue::from_f64(avg_eye_movement));
+        result.push(&JsValue::from_f64(eye_movement_frequency));
+        result.push(&JsValue::from_f64(avg_blink_rate));
+        result.push(&JsValue::from_f64(avg_symmetry));
 
         Ok(result)
     }
@@ -101,6 +184,29 @@ impl BiofeedbackProcessor {
         (count_gt_50 as f64 / differences.len() as f64) * 100.0
     }
 
+    /// Compute variability of a signal
+    fn compute_variability(&self, signal: &[f64]) -> f64 {
+        let mean = signal.iter().sum::<f64>() / signal.len() as f64;
+        let variance = signal.iter()
+            .map(|&x| (x - mean).powi(2))
+            .sum::<f64>() / signal.len() as f64;
+        variance.sqrt()
+    }
+
+    /// Compute eye movement frequency
+    fn compute_eye_movement_frequency(&self) -> f64 {
+        if self.facial_metrics.eye_movement.len() < 2 {
+            return 0.0;
+        }
+
+        let threshold = 0.1; // Threshold for significant eye movement
+        let movements = self.facial_metrics.eye_movement.windows(2)
+            .filter(|window| (window[1] - window[0]).abs() > threshold)
+            .count();
+
+        (movements as f64 / (self.facial_metrics.eye_movement.len() - 1) as f64) * self.sampling_rate
+    }
+
     /// Simple bandpass filter using moving average
     fn bandpass_filter(&self, signal: &[f64], low_freq: f64, high_freq: f64) -> Vec<f64> {
         let window_size = (self.sampling_rate / (low_freq + high_freq) * 2.0) as usize;
@@ -147,6 +253,29 @@ pub fn compute_hrv_metrics(rr_intervals: &[f64]) -> Result<Array, JsValue> {
 pub fn compute_respiratory_rate(signal: &[f64], sampling_rate: f64) -> Result<f64, JsValue> {
     let processor = BiofeedbackProcessor::new(sampling_rate);
     processor.compute_resp_rate(signal)
+}
+
+#[wasm_bindgen]
+pub fn compute_facial_metrics_from_data(
+    muscle_tension: &[f64], 
+    eye_movement: &[f64], 
+    blink_rate: &[f64], 
+    facial_symmetry: &[f64]
+) -> Result<Array, JsValue> {
+    let processor = BiofeedbackProcessor::new(30.0);
+    let mut temp_processor = processor;
+    
+    // Add all data points
+    for i in 0..muscle_tension.len() {
+        temp_processor.add_facial_data(
+            muscle_tension[i],
+            eye_movement[i],
+            blink_rate[i],
+            facial_symmetry[i]
+        );
+    }
+    
+    temp_processor.compute_facial_metrics()
 }
 
 #[cfg(test)]
