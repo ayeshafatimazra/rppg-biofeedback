@@ -22,8 +22,16 @@ const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
   const [stressIndex, setStressIndex] = useState<number>(45);
   const [showHelp, setShowHelp] = useState(false);
   const [sessionPaused, setSessionPaused] = useState(false);
+  const [chartData, setChartData] = useState<Array<{
+    time: number;
+    heartRate: number;
+    respiratoryRate: number;
+    stressLevel: number;
+    hrvRmssd: number;
+  }>>([]);
   
   const breathingIntervalRef = useRef<NodeJS.Timeout>();
+  const timeRef = useRef(0);
 
   const currentPhase = currentPattern.phases[currentPhaseIndex];
 
