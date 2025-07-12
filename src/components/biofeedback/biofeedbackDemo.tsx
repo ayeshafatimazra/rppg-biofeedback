@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import styles from './biofeedback.module.scss';
+import { BREATHING_PATTERNS, BreathingPattern, BreathingPhase } from './breathingPatterns';
 
 interface BiofeedbackDemoProps {
   isRecording: boolean;
@@ -14,22 +16,20 @@ interface HRVMetrics {
 const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
   const [hrvMetrics, setHrvMetrics] = useState<HRVMetrics | null>(null);
   const [respiratoryRate, setRespiratoryRate] = useState<number>(12.5);
-  const [breathingPhase, setBreathingPhase] = useState<'inhale' | 'exhale' | 'hold'>('inhale');
-  const [breathingTimer, setBreathingTimer] = useState(5);
+  const [currentPattern, setCurrentPattern] = useState<BreathingPattern>(BREATHING_PATTERNS[0]);
+  const [currentPhaseIndex, setCurrentPhaseIndex] = useState(0);
+  const [breathingTimer, setBreathingTimer] = useState(4);
   const [stressIndex, setStressIndex] = useState<number>(45);
+  const [showHelp, setShowHelp] = useState(false);
+  const [sessionPaused, setSessionPaused] = useState(false);
   
   const breathingIntervalRef = useRef<NodeJS.Timeout>();
 
-  // Breathing exercise phases
-  const BREATHING_CYCLE = {
-    inhale: 5,
-    hold: 2,
-    exhale: 5
-  };
+  const currentPhase = currentPattern.phases[currentPhaseIndex];
 
   // Simulate HRV metrics
   useEffect(() => {
-    if (isRecording) {
+    if (isRecording && !sessionPaused) {
       const interval = setInterval(() => {
         // Simulate realistic HRV values
         const rmssd = 25 + Math.random() * 30; // 25-55 ms
@@ -49,25 +49,18 @@ const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
 
       return () => clearInterval(interval);
     }
-  }, [isRecording]);
+  }, [isRecording, sessionPaused]);
 
   // Breathing exercise timer
   useEffect(() => {
-    if (isRecording) {
+    if (isRecording && !sessionPaused) {
       breathingIntervalRef.current = setInterval(() => {
         setBreathingTimer(prev => {
           if (prev <= 1) {
-            // Switch breathing phase
-            if (breathingPhase === 'inhale') {
-              setBreathingPhase('hold');
-              return BREATHING_CYCLE.hold;
-            } else if (breathingPhase === 'hold') {
-              setBreathingPhase('exhale');
-              return BREATHING_CYCLE.exhale;
-            } else {
-              setBreathingPhase('inhale');
-              return BREATHING_CYCLE.inhale;
-            }
+            // Move to next phase
+            const nextPhaseIndex = (currentPhaseIndex + 1) % currentPattern.phases.length;
+            setCurrentPhaseIndex(nextPhaseIndex);
+            return currentPattern.phases[nextPhaseIndex].duration;
           }
           return prev - 1;
         });
@@ -79,19 +72,19 @@ const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
         }
       };
     }
-  }, [isRecording, breathingPhase]);
+  }, [isRecording, sessionPaused, currentPhaseIndex, currentPattern]);
 
-  const getBreathingInstruction = () => {
-    switch (breathingPhase) {
-      case 'inhale':
-        return 'Breathe In';
-      case 'hold':
-        return 'Hold';
-      case 'exhale':
-        return 'Breathe Out';
-      default:
-        return 'Breathe In';
+  const handlePatternChange = (patternId: string) => {
+    const newPattern = BREATHING_PATTERNS.find(p => p.id === patternId);
+    if (newPattern) {
+      setCurrentPattern(newPattern);
+      setCurrentPhaseIndex(0);
+      setBreathingTimer(newPattern.phases[0].duration);
     }
+  };
+
+  const togglePause = () => {
+    setSessionPaused(!sessionPaused);
   };
 
   const getStressLevel = () => {
@@ -106,8 +99,105 @@ const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
     return '#F44336';
   };
 
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'beginner': return '#4CAF50';
+      case 'intermediate': return '#FF9800';
+      case 'advanced': return '#F44336';
+      default: return '#666';
+    }
+  };
+
   return (
     <div className={styles.biofeedbackContainer}>
+      {/* Help Overlay */}
+      {showHelp && (
+        <div className={styles.helpOverlay}>
+          <div className={styles.helpContent}>
+            <h2>Welcome to Guided Breathing</h2>
+            <p>This biofeedback system helps you reduce stress through ancient breathing techniques.</p>
+            
+            <h3>Understanding Your Metrics:</h3>
+            <ul>
+              <li><strong>RMSSD:</strong> Heart rate variability - higher values indicate better stress resilience</li>
+              <li><strong>SDNN:</strong> Overall heart rate variability - indicates autonomic nervous system balance</li>
+              <li><strong>pNN50:</strong> Percentage of heartbeats with &gt;50ms intervals - higher is better</li>
+              <li><strong>Stress Level:</strong> Combined assessment of your current stress state</li>
+            </ul>
+
+            <h3>How to Use:</h3>
+            <ol>
+              <li>Choose a breathing pattern that feels right for you</li>
+              <li>Follow the expanding/contracting circle</li>
+              <li>Read the gentle instructions</li>
+              <li>Focus on your breath and let go of thoughts</li>
+            </ol>
+
+            <button 
+              className={styles.helpCloseButton}
+              onClick={() => setShowHelp(false)}
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Controls */}
+      <div className={styles.controls}>
+        <div className={styles.patternSelector}>
+          <label htmlFor="breathing-pattern">Breathing Pattern:</label>
+          <select 
+            id="breathing-pattern"
+            value={currentPattern.id}
+            onChange={(e) => handlePatternChange(e.target.value)}
+            disabled={isRecording}
+          >
+            {BREATHING_PATTERNS.map(pattern => (
+              <option key={pattern.id} value={pattern.id}>
+                {pattern.name} ({pattern.difficulty})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className={styles.sessionControls}>
+          {isRecording && (
+            <button 
+              className={styles.pauseButton}
+              onClick={togglePause}
+            >
+              {sessionPaused ? 'Resume' : 'Pause'}
+            </button>
+          )}
+          
+          <button 
+            className={styles.helpButton}
+            onClick={() => setShowHelp(true)}
+          >
+            ?
+          </button>
+        </div>
+      </div>
+
+      {/* Pattern Info */}
+      <div className={styles.patternInfo}>
+        <h3>{currentPattern.name}</h3>
+        <p className={styles.patternDescription}>{currentPattern.description}</p>
+        <div className={styles.patternMeta}>
+          <span className={styles.culturalOrigin}>Origin: {currentPattern.culturalOrigin}</span>
+          <span 
+            className={styles.difficulty}
+            style={{ color: getDifficultyColor(currentPattern.difficulty) }}
+          >
+            {currentPattern.difficulty}
+          </span>
+        </div>
+        <div className={styles.benefits}>
+          <strong>Benefits:</strong> {currentPattern.benefits.join(', ')}
+        </div>
+      </div>
+
       <div className={styles.metricsGrid}>
         {/* HRV Metrics */}
         <div className={styles.metricCard}>
@@ -153,13 +243,25 @@ const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
           <div className={styles.stressScore}>{stressIndex.toFixed(0)}/100</div>
         </div>
 
-        {/* Breathing Exercise */}
+        {/* Guided Breathing Exercise */}
         <div className={styles.metricCard}>
-          <h3>Paced Breathing</h3>
-          <div className={`${styles.breathingCircle} ${styles[breathingPhase]}`}>
-            <span className={styles.breathingText}>{getBreathingInstruction()}</span>
+          <h3>Guided Breathing</h3>
+          <div 
+            className={`${styles.breathingCircle} ${styles[currentPhase.name]}`}
+            style={{ 
+              borderColor: currentPhase.color,
+              boxShadow: `0 0 30px ${currentPhase.color}40`
+            }}
+          >
+            <span className={styles.breathingText}>{currentPhase.instruction}</span>
             <span className={styles.breathingTimer}>{breathingTimer}s</span>
+            <span className={styles.phaseName}>{currentPhase.name.replace('-', ' ')}</span>
           </div>
+          {sessionPaused && (
+            <div className={styles.pausedIndicator}>
+              Session Paused
+            </div>
+          )}
         </div>
       </div>
 
