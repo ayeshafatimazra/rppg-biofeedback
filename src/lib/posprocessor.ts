@@ -60,8 +60,57 @@ class Posprocessor implements PosprocessorInteface {
         Rank
       >;
       // const rppgCumsum = cumsum(reshape(rppg, [-1, 1]), 0);
-      this.tensorStore.addRppgPltData(rppg.dataSync());
+      const rppgData = rppg.dataSync();
+      this.tensorStore.addRppgPltData(rppgData);
+      
+      // Calculate heart rate from rPPG signal
+      this.calculateHeartRate(rppgData);
+      
+      // Calculate RR intervals
+      this.calculateRRIntervals(rppgData);
     }
+  };
+
+  private calculateHeartRate = (rppgData: TypedArray) => {
+    // Simple heart rate calculation from rPPG signal
+    // In a real implementation, this would use peak detection
+    const signal = Array.from(rppgData);
+    const peaks = this.findPeaks(signal);
+    
+    if (peaks.length >= 2) {
+      const intervals = peaks.slice(1).map((peak, i) => peak - peaks[i]);
+      const avgInterval = intervals.reduce((sum, interval) => sum + interval, 0) / intervals.length;
+      const heartRate = 60 / (avgInterval / 30); // Assuming 30 Hz sampling rate
+      this.tensorStore.addHeartRate(heartRate);
+    }
+  };
+
+  private calculateRRIntervals = (rppgData: TypedArray) => {
+    // Calculate RR intervals from rPPG signal
+    const signal = Array.from(rppgData);
+    const peaks = this.findPeaks(signal);
+    
+    if (peaks.length >= 2) {
+      const intervals = peaks.slice(1).map((peak, i) => (peak - peaks[i]) * (1000 / 30)); // Convert to ms
+      intervals.forEach(interval => {
+        this.tensorStore.addRRInterval(interval);
+      });
+    }
+  };
+
+  private findPeaks = (signal: number[]): number[] => {
+    const peaks: number[] = [];
+    const threshold = Math.max(...signal) * 0.5;
+    
+    for (let i = 1; i < signal.length - 1; i++) {
+      if (signal[i] > threshold && 
+          signal[i] > signal[i - 1] && 
+          signal[i] > signal[i + 1]) {
+        peaks.push(i);
+      }
+    }
+    
+    return peaks;
   };
 }
 
