@@ -15,10 +15,12 @@ import Fili from 'fili';
 import Header from '../components/header';
 import Research from '../components/research';
 import Contributor from '../components/contributor';
+import Biofeedback from '../components/biofeedback';
 import styles from '../styles/Home.module.scss';
 import tensorStore from '../lib/tensorStore';
 import Preprocessor from '../lib/preprocessor';
 import Posprocessor from '../lib/posprocessor';
+import wasmInterface from '../lib/wasmInterface';
 
 const postprocessor = new Posprocessor(tensorStore);
 const preprocessor = new Preprocessor(tensorStore, postprocessor);
@@ -47,6 +49,7 @@ const Home = () => {
   });
   const refCountDown = React.useRef(30);
   const [countDown, setCountDown] = useState(30);
+  const [wasmLoaded, setWasmLoaded] = useState(false);
 
   useEffect(
     () => () => {
@@ -69,6 +72,21 @@ const Home = () => {
     },
     []
   );
+
+  // Initialize WASM module
+  useEffect(() => {
+    const initWASM = async () => {
+      try {
+        await wasmInterface.initialize();
+        setWasmLoaded(true);
+        console.log('WASM module initialized successfully');
+      } catch (error) {
+        console.error('Failed to initialize WASM module:', error);
+      }
+    };
+
+    initWASM();
+  }, []);
 
   const startRecording = async () => {
     await postprocessor.loadModel();
@@ -230,6 +248,16 @@ const Home = () => {
                     }
                   ]
                 }
+              }}
+            />
+          )}
+          {wasmLoaded && (
+            <Biofeedback
+              heartRateData={tensorStore.getHeartRates()}
+              rrIntervals={tensorStore.getRRIntervals()}
+              isRecording={isRecording}
+              onBreathingPhaseChange={(phase) => {
+                console.log('Breathing phase changed to:', phase);
               }}
             />
           )}
