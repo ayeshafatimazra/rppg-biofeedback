@@ -10,6 +10,18 @@ export interface TensorStoreInterface {
   getRRIntervals(): number[];
   getHeartRates(): number[];
   getCurrentHeartRate(): number | null;
+  // Facial metrics
+  addFacialMetrics(metrics: FacialMetrics): void;
+  getFacialMetrics(): FacialMetrics[];
+  getCurrentFacialMetrics(): FacialMetrics | null;
+}
+
+export interface FacialMetrics {
+  muscleTension: number;
+  eyeMovement: number;
+  blinkRate: number;
+  facialSymmetry: number;
+  timestamp: number;
 }
 
 class TensorStore implements TensorStoreInterface {
@@ -21,6 +33,8 @@ class TensorStore implements TensorStoreInterface {
 
   heartRates: number[];
 
+  facialMetrics: FacialMetrics[];
+
   initialWait: boolean;
 
   constructor() {
@@ -28,6 +42,7 @@ class TensorStore implements TensorStoreInterface {
     this.rppgPltData = [];
     this.rrIntervals = [];
     this.heartRates = [];
+    this.facialMetrics = [];
     this.initialWait = true;
   }
 
@@ -39,6 +54,7 @@ class TensorStore implements TensorStoreInterface {
     this.rppgPltData = [];
     this.rrIntervals = [];
     this.heartRates = [];
+    this.facialMetrics = [];
     this.initialWait = true;
   };
 
@@ -66,6 +82,14 @@ class TensorStore implements TensorStoreInterface {
     this.heartRates.push(rate);
   };
 
+  addFacialMetrics = (metrics: FacialMetrics) => {
+    this.facialMetrics.push(metrics);
+    // Keep only last 100 facial metrics to prevent memory issues
+    if (this.facialMetrics.length > 100) {
+      this.facialMetrics.shift();
+    }
+  };
+
   getRRIntervals = () => {
     return [...this.rrIntervals];
   };
@@ -76,6 +100,14 @@ class TensorStore implements TensorStoreInterface {
 
   getCurrentHeartRate = () => {
     return this.heartRates.length > 0 ? this.heartRates[this.heartRates.length - 1] : null;
+  };
+
+  getFacialMetrics = () => {
+    return [...this.facialMetrics];
+  };
+
+  getCurrentFacialMetrics = () => {
+    return this.facialMetrics.length > 0 ? this.facialMetrics[this.facialMetrics.length - 1] : null;
   };
 }
 
