@@ -16,6 +16,7 @@ import Header from '../components/header';
 import Research from '../components/research';
 import Contributor from '../components/contributor';
 import BiofeedbackDemo from '../components/biofeedback/biofeedbackDemo';
+import FacialBiofeedback from '../components/biofeedback/facialBiofeedback';
 import styles from '../styles/Home.module.scss';
 import tensorStore from '../lib/tensorStore';
 import Preprocessor from '../lib/preprocessor';
@@ -178,7 +179,7 @@ const Home = () => {
         <Contributor />
         <div className={styles.contentContainer}>
           <h3>
-            This is a demo for camera-based remote PPG (Pulse) sensing. The
+            This is a demo for camera-based remote PPG (Pulse) sensing with facial biofeedback. The
             recorded video will not be uploaded to cloud.
           </h3>
           <h4 style={{ color: 'red' }}>
@@ -237,6 +238,10 @@ const Home = () => {
             />
           )}
           <BiofeedbackDemo isRecording={isRecording} />
+          <FacialBiofeedback 
+            isRecording={isRecording} 
+            facialMetrics={tensorStore.getFacialMetrics()}
+          />
           <Research />
           <a href="http://cs.washington.edu/" target="_blank">
             <img src="/images/UWlogo5.png" alt="" width={500} height={70} />
