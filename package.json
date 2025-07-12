@@ -8,8 +8,9 @@
     "start": "next start -p 80",
     "lint:eslint": "eslint . --ext .ts,.tsx",
     "lint:staged": "lint-staged",
-    "build:wasm": "./build-wasm.sh",
-    "dev:full": "npm run build:wasm && npm run dev"
+    "build:wasm": "wasm-pack build --target web --out-dir public/wasm",
+    "dev:full": "npm run build:wasm && npm run dev",
+    "postinstall": "npm run build:wasm"
   },
   "lint-staged": {
     "*.{js,jsx}": [
