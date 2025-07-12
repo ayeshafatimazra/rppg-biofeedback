@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start -p 80",
     "lint:eslint": "eslint . --ext .ts,.tsx",
-    "lint:staged": "lint-staged"
+    "lint:staged": "lint-staged",
+    "build:wasm": "./build-wasm.sh",
+    "dev:full": "npm run build:wasm && npm run dev"
   },
   "lint-staged": {
     "*.{js,jsx}": [
@@ -26,7 +28,8 @@
     "react-chartjs-2": "^2.10.0",
     "react-dom": "16.13.1",
     "react-webcam": "5.2.0",
-    "sass": "1.26.10"
+    "sass": "1.26.10",
+    "recharts": "^2.8.0"
   },
   "devDependencies": {
     "@types/react": "^16.9.53",
