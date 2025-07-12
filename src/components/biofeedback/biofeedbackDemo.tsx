@@ -35,7 +35,7 @@ const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
 
   const currentPhase = currentPattern.phases[currentPhaseIndex];
 
-  // Simulate HRV metrics
+  // Simulate HRV metrics and update chart data
   useEffect(() => {
     if (isRecording && !sessionPaused) {
       const interval = setInterval(() => {
@@ -53,9 +53,29 @@ const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
         // Simulate stress index
         const stress = 20 + Math.random() * 60; // 20-80
         setStressIndex(stress);
+
+        // Update chart data
+        timeRef.current += 2;
+        const newDataPoint = {
+          time: timeRef.current,
+          heartRate: 70 + Math.random() * 20, // 70-90 bpm
+          respiratoryRate: respRate,
+          stressLevel: stress,
+          hrvRmssd: rmssd
+        };
+        
+        setChartData(prev => {
+          const updated = [...prev, newDataPoint];
+          // Keep only last 30 data points (60 seconds)
+          return updated.slice(-30);
+        });
       }, 2000);
 
       return () => clearInterval(interval);
+    } else if (!isRecording) {
+      // Reset chart data when not recording
+      setChartData([]);
+      timeRef.current = 0;
     }
   }, [isRecording, sessionPaused]);
 
@@ -273,27 +293,84 @@ const BiofeedbackDemo: React.FC<BiofeedbackDemoProps> = ({ isRecording }) => {
         </div>
       </div>
 
-      {/* Demo Chart */}
+      {/* Real-time Chart */}
       <div className={styles.chartContainer}>
-        <h3>Real-time Monitoring (Demo)</h3>
-        <div style={{ 
-          height: '300px', 
-          display: 'flex', 
-          alignItems: 'center', 
-          justifyContent: 'center',
-          background: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: '10px',
-          border: '1px solid rgba(255, 255, 255, 0.2)'
-        }}>
-          <div style={{ textAlign: 'center' }}>
-            <p style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>
-              Real-time dual-axis chart will be displayed here
-            </p>
-            <p style={{ fontSize: '1rem', opacity: 0.8 }}>
-              Heart Rate: ~75 bpm | Respiratory Rate: ~12.5 breaths/min
-            </p>
+        <h3>Real-time Biofeedback Monitoring</h3>
+        {chartData.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <LineChart data={chartData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
+              <XAxis 
+                dataKey="time" 
+                stroke="rgba(255, 255, 255, 0.7)"
+                label={{ value: 'Time (seconds)', position: 'insideBottom', offset: -10, fill: 'rgba(255, 255, 255, 0.8)' }}
+              />
+              <YAxis 
+                yAxisId="left"
+                stroke="rgba(255, 255, 255, 0.7)"
+                label={{ value: 'Heart Rate (bpm)', angle: -90, position: 'insideLeft', fill: 'rgba(255, 255, 255, 0.8)' }}
+                domain={[60, 100]}
+              />
+              <YAxis 
+                yAxisId="right" 
+                orientation="right"
+                stroke="rgba(255, 255, 255, 0.7)"
+                label={{ value: 'Respiratory Rate (breaths/min)', angle: 90, position: 'insideRight', fill: 'rgba(255, 255, 255, 0.8)' }}
+                domain={[8, 20]}
+              />
+              <Tooltip 
+                contentStyle={{ 
+                  backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  borderRadius: '8px',
+                  color: 'white'
+                }}
+              />
+              <Legend 
+                wrapperStyle={{ color: 'rgba(255, 255, 255, 0.8)' }}
+              />
+              <Line 
+                yAxisId="left"
+                type="monotone" 
+                dataKey="heartRate" 
+                stroke="#ff6b6b" 
+                strokeWidth={2}
+                dot={{ fill: '#ff6b6b', strokeWidth: 2, r: 3 }}
+                name="Heart Rate"
+                animationDuration={300}
+              />
+              <Line 
+                yAxisId="right"
+                type="monotone" 
+                dataKey="respiratoryRate" 
+                stroke="#4ecdc4" 
+                strokeWidth={2}
+                dot={{ fill: '#4ecdc4', strokeWidth: 2, r: 3 }}
+                name="Respiratory Rate"
+                animationDuration={300}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        ) : (
+          <div style={{ 
+            height: '300px', 
+            display: 'flex', 
+            alignItems: 'center', 
+            justifyContent: 'center',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '10px',
+            border: '1px solid rgba(255, 255, 255, 0.2)'
+          }}>
+            <div style={{ textAlign: 'center' }}>
+              <p style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'rgba(255, 255, 255, 0.8)' }}>
+                Start a session to see real-time data
+              </p>
+              <p style={{ fontSize: '1rem', opacity: 0.6, color: 'rgba(255, 255, 255, 0.6)' }}>
+                Heart rate and respiratory rate will be displayed here
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
