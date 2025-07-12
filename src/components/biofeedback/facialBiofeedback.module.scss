@@ -1,0 +1,365 @@
+.facialBiofeedbackContainer {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 30px;
+  margin: 20px 0;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 20px;
+  }
+
+  > * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.helpOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.helpContent {
+  background: white;
+  color: #333;
+  padding: 40px;
+  border-radius: 20px;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+
+  h2 {
+    color: #667eea;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+
+  h3 {
+    color: #764ba2;
+    margin: 25px 0 15px 0;
+    font-size: 20px;
+  }
+
+  p {
+    margin-bottom: 20px;
+    line-height: 1.6;
+  }
+
+  ul, ol {
+    margin: 15px 0;
+    padding-left: 20px;
+
+    li {
+      margin: 8px 0;
+      line-height: 1.5;
+    }
+  }
+
+  strong {
+    color: #667eea;
+  }
+}
+
+.helpCloseButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 12px 30px;
+  border-radius: 25px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 20px;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+  }
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+
+  h3 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 600;
+  }
+}
+
+.helpButton {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+  }
+}
+
+.relaxationScore {
+  text-align: center;
+  margin-bottom: 30px;
+
+  h3 {
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+  }
+}
+
+.scoreCircle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+
+  &:hover {
+    transform: scale(1.05);
+  }
+}
+
+.scoreValue {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+  margin-bottom: 5px;
+}
+
+.scoreLabel {
+  font-size: 12px;
+  color: white;
+  opacity: 0.9;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.metricCard {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+  }
+
+  h4 {
+    margin: 0 0 15px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+.metricValue {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+.value {
+  font-size: 24px;
+  font-weight: bold;
+  color: white;
+}
+
+.label {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: right;
+}
+
+.metricBar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.metricFill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+.chartContainer {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 30px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  h4 {
+    margin: 0 0 20px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+  }
+}
+
+.relaxationTips {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  padding: 20px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  h4 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: white;
+  }
+
+  ul {
+    margin: 0;
+    padding-left: 20px;
+    list-style: none;
+
+    li {
+      margin: 8px 0;
+      padding-left: 20px;
+      position: relative;
+      color: rgba(255, 255, 255, 0.9);
+      line-height: 1.5;
+
+      &::before {
+        content: '•';
+        color: #4CAF50;
+        font-weight: bold;
+        position: absolute;
+        left: 0;
+      }
+    }
+  }
+}
+
+// Responsive design
+@media (max-width: 768px) {
+  .facialBiofeedbackContainer {
+    padding: 20px;
+    margin: 15px 0;
+  }
+
+  .metricsGrid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+
+  .scoreCircle {
+    width: 100px;
+    height: 100px;
+
+    .scoreValue {
+      font-size: 20px;
+    }
+
+    .scoreLabel {
+      font-size: 11px;
+    }
+  }
+
+  .helpContent {
+    padding: 25px;
+    margin: 20px;
+    max-width: calc(100vw - 40px);
+  }
+
+  .controls {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+}
+
+// Animation for metric cards
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.metricCard {
+  animation: fadeInUp 0.6s ease forwards;
+  
+  &:nth-child(1) { animation-delay: 0.1s; }
+  &:nth-child(2) { animation-delay: 0.2s; }
+  &:nth-child(3) { animation-delay: 0.3s; }
+  &:nth-child(4) { animation-delay: 0.4s; }
+}
+
+// Pulse animation for score circle
+@keyframes pulse {
+  0% {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+  }
+  100% {
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  }
+}
+
+.scoreCircle {
+  animation: pulse 2s ease-in-out infinite;
+} 
