@@ -5,6 +5,7 @@
   margin: 2rem 0;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
   color: white;
+  position: relative;
 }
 
 .metricsGrid {
@@ -213,6 +214,36 @@
   .breathingTimer {
     font-size: 1.2rem;
   }
+
+  .controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .patternSelector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .sessionControls {
+    justify-content: center;
+  }
+
+  .patternInfo {
+    padding: 1rem;
+  }
+
+  .patternMeta {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: flex-start;
+  }
+
+  .helpContent {
+    margin: 1rem;
+    padding: 1.5rem;
+  }
 }
 
 // Animation for breathing circle
@@ -235,4 +266,269 @@
 
 .breathingCircle.exhale {
   animation: breathe 5s ease-in-out infinite reverse;
+}
+
+// Help Overlay
+.helpOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.helpContent {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-radius: 20px;
+  padding: 2rem;
+  max-width: 600px;
+  max-height: 80vh;
+  overflow-y: auto;
+  color: white;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+
+  h2 {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  h3 {
+    margin: 1.5rem 0 0.5rem 0;
+    font-size: 1.2rem;
+  }
+
+  p, ul, ol {
+    margin: 0.5rem 0;
+    line-height: 1.6;
+  }
+
+  ul, ol {
+    padding-left: 1.5rem;
+  }
+
+  li {
+    margin: 0.25rem 0;
+  }
+}
+
+.helpCloseButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  cursor: pointer;
+  margin-top: 1.5rem;
+  width: 100%;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+  }
+}
+
+// Controls
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.patternSelector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  label {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  select {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    padding: 0.5rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    cursor: pointer;
+
+    &:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    option {
+      background: #667eea;
+      color: white;
+    }
+  }
+}
+
+.sessionControls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.pauseButton {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.helpButton {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  font-size: 1.2rem;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+  }
+}
+
+// Pattern Info
+.patternInfo {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 15px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+
+  h3 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.3rem;
+    color: rgba(255, 255, 255, 0.95);
+  }
+}
+
+.patternDescription {
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.9);
+  font-style: italic;
+}
+
+.patternMeta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.culturalOrigin {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.difficulty {
+  font-weight: 600;
+  text-transform: uppercase;
+  font-size: 0.8rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.benefits {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+}
+
+// Enhanced breathing circle
+.breathingCircle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.5s ease;
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+
+  &.inhale {
+    transform: scale(1.1);
+  }
+
+  &.hold, &.hold-full, &.hold-empty {
+    transform: scale(1.05);
+  }
+
+  &.exhale {
+    transform: scale(0.9);
+  }
+
+  &.inhale-left, &.inhale-right {
+    transform: scale(1.1);
+  }
+
+  &.exhale-left, &.exhale-right {
+    transform: scale(0.9);
+  }
+}
+
+.breathingText {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: white;
+  text-align: center;
+  margin-bottom: 0.25rem;
+  line-height: 1.2;
+}
+
+.breathingTimer {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: white;
+}
+
+.phaseName {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  text-transform: capitalize;
+  margin-top: 0.25rem;
+}
+
+.pausedIndicator {
+  text-align: center;
+  margin-top: 0.5rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-style: italic;
+  font-size: 0.9rem;
 } 
