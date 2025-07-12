@@ -227,7 +227,7 @@ impl BiofeedbackProcessor {
     /// Find peaks in the signal
     fn find_peaks(&self, signal: &[f64]) -> Vec<usize> {
         let mut peaks = Vec::new();
-        let threshold = signal.iter().fold(0.0, |a, &b| a.max(b)) * 0.5;
+        let threshold = signal.iter().fold(0.0_f64, |a, &b| a.max(b)) * 0.5;
 
         for i in 1..signal.len() - 1 {
             if signal[i] > threshold && 
