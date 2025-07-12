@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start -p 80",
+    "dev": "NODE_OPTIONS='--openssl-legacy-provider' next dev",
+    "build": "NODE_OPTIONS='--openssl-legacy-provider' next build",
+    "start": "NODE_OPTIONS='--openssl-legacy-provider' next start -p 80",
     "lint:eslint": "eslint . --ext .ts,.tsx",
     "lint:staged": "lint-staged",
     "build:wasm": "wasm-pack build --target web --out-dir public/wasm",
